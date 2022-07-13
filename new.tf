@@ -1,22 +1,46 @@
-# Terraform Settings Block
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      #version = "~> 3.21" # Optional but recommended in production
-    }
+resource "aws_s3_bucket" "naveen_terraform" {
+  bucket = "naveen-tf-02"
+  tags = {
+    "Description" = "Bucket for saving tfstate files"
   }
 }
 
-# Provider Block
-provider "aws" {
-  profile = "default" # AWS Credentials Profile configured on your local desktop terminal  $HOME/.aws/credentials
-  region  = "us-east-1"
+resource "aws_s3_bucket_policy" "naveenbucketpolicy" {
+  bucket = "naveen-tf-02"
+  policy = <<EOF
+
+{
+  "Id": "Policy1657734385726",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Stmt1657734383892",
+      "Action": "s3:*",
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::naveen-tf-02",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::106619687188:user/naveen"
+        ]
+      }
+    }
+  ]
 }
 
-# Resource Block
-resource "aws_instance" "ec2demo" {
-  ami           = "ami-0be2609ba883822ec" # Amazon Linux in us-east-1, update as per your region
-  instance_type = "t2.micro"
+  
+EOF
 }
-#This is the first TF file to creat EC2 instance with given AMI
+
+resource "aws_dynamodb_table" "state_locking" {
+   
+  name = "state_locking"
+  hash_key = "LockID"
+  read_capacity = 20
+  write_capacity = 20
+ 
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+}
+  
